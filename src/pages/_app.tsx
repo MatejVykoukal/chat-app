@@ -1,6 +1,11 @@
 import Head from 'next/head';
 import { AppProps } from 'next/app';
 import '../styles/index.css';
+import { initializeFirebaseApp } from '../services/firebase';
+import initAuth from '../services/authInit';
+
+initializeFirebaseApp();
+initAuth();
 
 function MyApp({ Component, pageProps }: AppProps) {
 	return (

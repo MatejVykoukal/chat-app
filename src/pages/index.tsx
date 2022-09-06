@@ -1,17 +1,18 @@
 import { FormEvent, useEffect, useRef, useState } from 'react';
 import { Socket } from 'socket.io-client';
-import { setUser } from '../services/setUser';
+import { setUserName } from '../services/setUser';
 import { socketInitializer } from '../services/socketInitializer';
-import { Message, User } from '../types';
+import { Message } from '../types';
 import { nanoid } from 'nanoid';
 import classnames from 'classnames';
 import { scrollToBottom, useDictionary } from '../utils';
-import { defaultDictionary } from '../constants';
+import { AuthAction, useAuthUser, withAuthUser } from 'next-firebase-auth';
+import Loader from '../components/Loader';
 
-let currrentUser: User;
 let socket: Socket;
 
-export default function Home() {
+function Home() {
+	const currentUser = useAuthUser();
 	const messageEl = useRef<HTMLInputElement>(null);
 	const [messages, setMessages] = useState<Message[]>([]);
 	const [inputMessageText, setInputMessageText] = useState('');
@@ -19,7 +20,9 @@ export default function Home() {
 	useEffect(() => {
 		(async () => {
 			socket = await socketInitializer(registerSocketEvents);
-			currrentUser = setUser();
+			if (!currentUser.displayName) {
+				currentUser.displayName = await setUserName();
+			}
 		})();
 	}, []);
 
@@ -42,7 +45,7 @@ export default function Home() {
 		}
 
 		const message = {
-			user: currrentUser,
+			user: currentUser,
 			id: nanoid(),
 			message: inputMessageText,
 			timestamp: Date.now().toString(),
@@ -55,31 +58,31 @@ export default function Home() {
 	};
 
 	return (
-		<main className="flex flex-col bg-gray-900 text-white">
+		<main className="flex flex-col">
 			<div
 				id="message-container"
 				className="h-[calc(100vh-3rem)] overflow-y-scroll flex flex-col gap-2 p-4"
 			>
 				{messages.map((message) => (
 					<div
+						key={message.id}
 						className={classnames('flex flex-col', {
-							'self-end items-end': message.user.id === currrentUser.id,
-							'self-start items-start': message.user.id !== currrentUser.id,
+							'self-end items-end': message.user.id === currentUser.id,
+							'self-start items-start': message.user.id !== currentUser.id,
 						})}
 					>
 						<span>
-							{message.user.id === currrentUser.id
+							{message.user.id === currentUser.id
 								? useDictionary('me')
-								: message.user.fullName}
+								: message.user.displayName}
 						</span>
 						<div
 							className={classnames(
 								'p-2 text-xl',
-								message.user.id === currrentUser.id
+								message.user.id === currentUser.id
 									? 'bg-blue-800'
 									: 'bg-gray-800'
 							)}
-							key={message.id}
 						>
 							{message.message}
 						</div>
@@ -107,3 +110,9 @@ export default function Home() {
 		</main>
 	);
 }
+
+export default withAuthUser({
+	whenUnauthedBeforeInit: AuthAction.SHOW_LOADER,
+	whenUnauthedAfterInit: AuthAction.REDIRECT_TO_LOGIN,
+	LoaderComponent: Loader,
+})(Home);

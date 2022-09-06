@@ -1,9 +1,14 @@
 # Chat app
 
+## Demo
+
+- https://matej-vykoukal-chat-app.herokuapp.com/
+
 > After v1 add unit tests
+
 > Demo depoloyment on heroku, since Vercel does not support the custom server functionality that Nextjs has.
 
-## v1
+## v1 **DONE**
 
 - single chat room
 - prompt & local storage for username

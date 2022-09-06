@@ -1,10 +1,7 @@
-export interface User {
-	id: string;
-	fullName: string;
-}
+import { AuthUserContext } from 'next-firebase-auth';
 
 export interface Message {
-	user: User;
+	user: AuthUserContext;
 	message: string;
 	id: string;
 	timestamp: string;

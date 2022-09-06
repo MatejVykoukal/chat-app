@@ -8,13 +8,17 @@
 		"start": "next start -p $PORT"
 	},
 	"dependencies": {
+		"firebase": "^9.9.4",
+		"firebase-admin": "^11.0.1",
 		"next": "^12.2.5",
+		"next-firebase-auth": "^1.0.0-canary.17",
 		"react": "^18.2.0",
 		"react-dom": "^18.2.0",
 		"socket.io": "^4.5.1",
 		"socket.io-client": "^4.5.1"
 	},
 	"devDependencies": {
+		"nanoid": "^4.0.0",
 		"@types/node": "^17.0.21",
 		"@types/react": "^18.0.18",
 		"autoprefixer": "^10.4.2",
@@ -23,5 +27,8 @@
 		"postcss-import": "^14.0.2",
 		"tailwindcss": "^3.0.23",
 		"typescript": "^4.6.2"
-	}
+	},
+	"cacheDirectories": [
+		".next/cache"
+	]
 }
