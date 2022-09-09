@@ -1,4 +1,4 @@
-import { defaultDictionary } from '../constants';
+import { DEFAULT_DICTIONARY } from '../constants';
 
 export const scrollToBottom = (elementId: string) => {
 	const element = document.getElementById(elementId);
@@ -6,9 +6,9 @@ export const scrollToBottom = (elementId: string) => {
 };
 
 export const useDictionary = (
-	dictionaryQuery: keyof typeof defaultDictionary,
+	dictionaryQuery: keyof typeof DEFAULT_DICTIONARY,
 	fallbackString = `???-${dictionaryQuery}`,
-	dictionary = defaultDictionary
+	dictionary = DEFAULT_DICTIONARY
 ) => {
 	return dictionary[dictionaryQuery]
 		? dictionary[dictionaryQuery]

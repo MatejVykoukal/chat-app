@@ -1,4 +1,4 @@
-export const defaultDictionary = {
+export const DEFAULT_DICTIONARY = {
 	me: 'Me',
 	send: 'Send',
 };

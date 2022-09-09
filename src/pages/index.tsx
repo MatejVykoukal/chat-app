@@ -8,6 +8,8 @@ import classnames from 'classnames';
 import { scrollToBottom, useDictionary } from '../utils';
 import { AuthAction, useAuthUser, withAuthUser } from 'next-firebase-auth';
 import Loader from '../components/Loader';
+import { addMessage } from '../services/addMessage';
+import { getMessages } from '../services/getMessages';
 
 let socket: Socket;
 
@@ -15,7 +17,7 @@ function Home() {
 	const currentUser = useAuthUser();
 	const messageEl = useRef<HTMLInputElement>(null);
 	const [messages, setMessages] = useState<Message[]>([]);
-	const [inputMessageText, setInputMessageText] = useState('');
+	const [inputMessageText, setInputMessageText] = useState<string>('');
 
 	useEffect(() => {
 		(async () => {
@@ -23,6 +25,11 @@ function Home() {
 			if (!currentUser.displayName) {
 				currentUser.displayName = await setUserName();
 			}
+
+			const storedMessages = await getMessages();
+			console.log(storedMessages);
+
+			setMessages([...storedMessages]);
 		})();
 	}, []);
 
@@ -44,14 +51,18 @@ function Home() {
 			return;
 		}
 
-		const message = {
-			user: currentUser,
+		const message: Message = {
+			user: {
+				id: currentUser.id,
+				displayName: currentUser.displayName,
+			},
 			id: nanoid(),
 			message: inputMessageText,
 			timestamp: Date.now().toString(),
 		};
 
 		setMessages((currentMessages) => [...currentMessages, message]);
+		addMessage(message);
 
 		socket.emit('message-submit', message);
 		setInputMessageText('');
@@ -63,31 +74,35 @@ function Home() {
 				id="message-container"
 				className="h-[calc(100vh-3rem)] overflow-y-scroll flex flex-col gap-2 p-4"
 			>
-				{messages.map((message) => (
-					<div
-						key={message.id}
-						className={classnames('flex flex-col', {
-							'self-end items-end': message.user.id === currentUser.id,
-							'self-start items-start': message.user.id !== currentUser.id,
-						})}
-					>
-						<span>
-							{message.user.id === currentUser.id
-								? useDictionary('me')
-								: message.user.displayName}
-						</span>
+				{messages.length ? (
+					messages.map((message) => (
 						<div
-							className={classnames(
-								'p-2 text-xl',
-								message.user.id === currentUser.id
-									? 'bg-blue-800'
-									: 'bg-gray-800'
-							)}
+							key={message.id}
+							className={classnames('flex flex-col', {
+								'self-end items-end': message.user.id === currentUser.id,
+								'self-start items-start': message.user.id !== currentUser.id,
+							})}
 						>
-							{message.message}
+							<span>
+								{message.user.id === currentUser.id
+									? useDictionary('me')
+									: message.user.displayName}
+							</span>
+							<div
+								className={classnames(
+									'p-2 text-xl',
+									message.user.id === currentUser.id
+										? 'bg-blue-800'
+										: 'bg-gray-800'
+								)}
+							>
+								{message.message}
+							</div>
 						</div>
-					</div>
-				))}
+					))
+				) : (
+					<Loader />
+				)}
 				<div className="w-0 h-0" id="message-container-bottom"></div>
 			</div>
 			<form
